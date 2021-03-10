@@ -1,6 +1,6 @@
 [package]
-name = "iops_bench"
-version = "0.1.0"
+name = "bat"
+version = "1.0.0"
 authors = ["heyin <heyin.cjy@alibaba-inc.com>"]
 edition = "2018"
 
