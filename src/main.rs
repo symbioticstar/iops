@@ -44,6 +44,9 @@ fn main() -> Result<()> {
             let mut seq = 1;
             loop {
                 for command in opts.commands.iter() {
+                    let command = command.replace("{}", i.into());
+                    let command = command.replace("{+1}", (i + 1).into());
+                    let command = command.replace("{-1}", (i - 1).into());
                     match conn.query_drop(command) {
                         Ok(_) => {
                             info!("{}", command)
