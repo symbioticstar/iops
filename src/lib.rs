@@ -17,8 +17,6 @@ pub struct CommandOpts {
     pub password: Option<String>,
     #[clap(short, long, default_value = "16")]
     pub threads: usize,
-    #[clap(short, long, default_value = "3600")]
-    pub secs: u64,
     #[clap(long, default_value = "3306")]
     pub port: u16,
 }

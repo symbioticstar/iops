@@ -1,11 +1,11 @@
 use std::io::Write;
 use std::sync::Arc;
 use std::thread;
-use std::thread::sleep;
+use std::thread::JoinHandle;
 
 use chrono::Local;
 use clap::Clap;
-use log::{error, info, warn};
+use log::{info, warn};
 use mysql::*;
 use mysql::prelude::*;
 
@@ -35,11 +35,11 @@ fn main() -> Result<()> {
 
     info!("Pool ready");
 
-
+    let mut join_handles: Vec<JoinHandle<()>> = vec![];
     for i in 0..opts.threads {
         let mut conn = pool.get_conn()?;
         let opts = opts.clone();
-        thread::Builder::new().name(format!("wk_{:02}", i)).spawn(move || {
+        let join_handle = thread::Builder::new().name(format!("wk_{:02}", i)).spawn(move || {
             info!("Initiated");
             let mut seq = 1;
             loop {
@@ -62,9 +62,10 @@ fn main() -> Result<()> {
                 seq = seq + 1;
             }
         }).unwrap();
+        join_handles.push(join_handle);
     }
-    info!("Start sleep");
-    let duration = std::time::Duration::from_secs(opts.secs);
-    sleep(duration);
+    for jh in join_handles {
+        jh.join().unwrap()
+    }
     Ok(())
 }
