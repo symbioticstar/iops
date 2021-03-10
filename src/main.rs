@@ -1,4 +1,5 @@
 use std::io::Write;
+use std::sync::Arc;
 use std::thread;
 use std::thread::sleep;
 
@@ -12,6 +13,8 @@ use iops_bench::CommandOpts;
 
 fn main() -> Result<()> {
     let opts: CommandOpts = CommandOpts::parse();
+    let opts = Arc::new(opts);
+
     env_logger::builder()
         .format(|buf, record| {
             writeln!(buf, "[{}] [{}] {}: {}",
@@ -24,22 +27,39 @@ fn main() -> Result<()> {
     info!("MySQL test iops");
 
     let pool = Pool::new(OptsBuilder::new()
-        .ip_or_hostname(opts.host)
-        .user(opts.username)
-        .pass(opts.password)
-        .db_name(opts.db)
+        .ip_or_hostname(opts.host.as_ref())
+        .user(opts.username.as_ref())
+        .pass(opts.password.as_ref())
+        .db_name(opts.db.as_ref())
         .tcp_port(opts.port))?;
 
     info!("Pool ready");
 
+
     for i in 0..opts.threads {
         let mut conn = pool.get_conn()?;
+        let opts = opts.clone();
         thread::Builder::new().name(format!("wk_{:02}", i)).spawn(move || {
             info!("Initiated");
             let mut seq = 1;
             loop {
-                conn.query_drop(format!("drop index k_{} on sbtest{}", i + 1, i + 1));
-                conn.query_drop(format!("create index k_{} on sbtest{}(k)", i + 1, i + 1));
+                for command in opts.commands.iter() {
+                    match conn.query_drop(command) {
+                        Ok(_) => {
+                            info!("{}", command)
+                        }
+                        Err(e) => {
+                            warn!("{}: {:?}", command, e)
+                        }
+                    }
+                }
+                if let Some(count) = opts.count {
+                    if count == seq {
+                        info!("Done");
+                        break;
+                    }
+                }
+                seq = seq + 1;
             }
         }).unwrap();
     }

@@ -9,6 +9,10 @@ pub struct CommandOpts {
     pub db: Option<String>,
     #[clap(short, long)]
     pub username: Option<String>,
+    #[clap(short)]
+    pub commands: Vec<String>,
+    #[clap(long)]
+    pub count: Option<u64>,
     #[clap(short, long)]
     pub password: Option<String>,
     #[clap(short, long, default_value = "16")]
