@@ -36,20 +36,10 @@ fn main() -> Result<()> {
         let mut conn = pool.get_conn()?;
         thread::Builder::new().name(format!("wk_{:02}", i)).spawn(move || {
             info!("Initiated");
-            match conn.query_drop(format!("DROP TABLE IF EXISTS m{}; CREATE TABLE `m{}` (`id` INT NOT NULL AUTO_INCREMENT, `str` LONGTEXT, PRIMARY KEY (`id`))", i, i)) {
-                Ok(_) => info!("Table created: m{}", i),
-                Err(e) => warn!("Failed to create table m{}: {:?}", i, e)
-            }
-            conn.query_drop("set @gibi = repeat('a', 10000000)").unwrap();
             let mut seq = 1;
             loop {
-                match conn.query_drop(format!("insert into m{} (str) values(@gibi)", i)) {
-                    Ok(_) => {
-                        info!("Inserted: #{}", seq);
-                        seq += 1;
-                    }
-                    Err(e) => warn!("Failed to insert: {:?}", e)
-                }
+                conn.query_drop(format!("drop index k_{} on sbtest{}", i + 1, i + 1));
+                conn.query_drop(format!("create index k_{} on sbtest{}(k)", i + 1, i + 1));
             }
         }).unwrap();
     }
