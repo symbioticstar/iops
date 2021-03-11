@@ -39,7 +39,7 @@ fn main() -> Result<()> {
     for i in 0..opts.threads {
         let mut conn = pool.get_conn()?;
         let opts = opts.clone();
-        let join_handle = thread::Builder::new().name(format!("wk_{:02}", i)).spawn(move || {
+        let join_handle = thread::Builder::new().name(format!("wk_{:03}", i)).spawn(move || {
             info!("Initiated");
             let mut seq = 1;
             loop {
