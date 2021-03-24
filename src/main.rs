@@ -2,6 +2,7 @@ use std::io::Write;
 use std::sync::Arc;
 use std::thread;
 use std::thread::JoinHandle;
+use std::time::Instant;
 
 use chrono::Local;
 use clap::Clap;
@@ -47,11 +48,15 @@ fn main() -> Result<()> {
                     let command = command.replace("{}", i.to_string().as_str());
                     let command = command.replace("{+}", (i + 1).to_string().as_str());
                     let command = command.replace("{-}", (i - 1).to_string().as_str());
+                    let start = Instant::now();
                     match conn.query_drop(&command) {
                         Ok(_) => {
+                            let span = start.elapsed();
+                            println!("{} {}", i, span.as_millis());
                             info!("{}", command)
                         }
                         Err(e) => {
+                            println!("{} {}", i, -1);
                             warn!("{}: {:?}", command, e)
                         }
                     }
