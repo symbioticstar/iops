@@ -52,7 +52,7 @@ fn main() -> Result<()> {
                     match conn.query_drop(&command) {
                         Ok(_) => {
                             let span = start.elapsed();
-                            println!("{} {}", i, span.as_millis());
+                            println!("{} {}", i, span.as_micros());
                             info!("{}", command)
                         }
                         Err(e) => {
